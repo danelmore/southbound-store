@@ -12,7 +12,6 @@ function SouthboundSalvage() {
   const [selectedImage, setSelectedImage] = useState(null); 
 
   useEffect(() => {
-    // Inject Google Font for reliable cursive
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
     link.rel = 'stylesheet';
@@ -51,7 +50,7 @@ function SouthboundSalvage() {
   };
 
   const pageStyle = {
-    color: '#e0e0e0',
+    color: '#003366', // Global text color now blue
     minHeight: '100vh',
     padding: '40px 20px',
     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif'
@@ -73,19 +72,21 @@ function SouthboundSalvage() {
   const gridStyle = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', 
-    gap: '15px',
-    maxWidth: '850px', 
+    gap: '20px',
+    maxWidth: '900px', 
     margin: '0 auto'
   };
 
+  // --- UPDATED: Card style is now white with blue text ---
   const cardStyle = {
-    background: '#2a2a2a',
-    borderRadius: '10px',
+    background: '#ffffff', // White box for items
+    borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 8px 20px rgba(0,0,0,0.6)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
     display: 'flex',
     flexDirection: 'column',
-    position: 'relative'
+    position: 'relative',
+    border: '1px solid rgba(0, 51, 102, 0.1)'
   };
 
   const ImageModal = () => {
@@ -111,7 +112,6 @@ function SouthboundSalvage() {
 
       <div style={pageStyle}>
         <header style={headerStyle}>
-          {/* UPDATED: Great Vibes Cursive Font */}
           <h1 style={{ 
             color: '#003366', 
             fontSize: '4.5em', 
@@ -135,7 +135,7 @@ function SouthboundSalvage() {
         </header>
 
         {loading ? (
-          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#d4af37' }}>Loading Inventory...</div>
+          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#ffffff' }}>Loading Inventory...</div>
         ) : (
           <div style={gridStyle}>
             {inventory.map(item => (
@@ -143,29 +143,30 @@ function SouthboundSalvage() {
                 
                 <div 
                   onClick={() => item.photo && setSelectedImage(item.photo)}
-                  style={{ height: '140px', background: '#111', cursor: item.photo ? 'zoom-in' : 'default', position: 'relative' }}
+                  style={{ height: '160px', background: '#f0f0f0', cursor: item.photo ? 'zoom-in' : 'default', position: 'relative' }}
                 >
                   {item.photo ? (
                     <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>No Image</div>
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}>No Image</div>
                   )}
                   
                   {item.sold && (
-                    <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                    <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                       SOLD
                     </div>
                   )}
                 </div>
 
-                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                  <h2 style={{ margin: '0 0 6px 0', fontSize: '1.1em', color: 'white' }}>{item.name}</h2>
-                  <div style={{ color: '#aaa', fontSize: '0.8em', marginBottom: '10px', flexGrow: 1, maxHeight: '40px', overflow: 'hidden' }}>{item.desc}</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #444', paddingTop: '10px' }}>
-                    <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: item.sold ? '#aaa' : '#d4af37' }}>
+                {/* --- UPDATED: Text inside card is now Navy Blue --- */}
+                <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
+                  <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
+                    <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>
                       ${item.price}
                     </span>
-                    <span style={{ fontSize: '0.7em', color: '#666' }}>
+                    <span style={{ fontSize: '0.7em', color: '#888' }}>
                       {new Date(item.created_at).toLocaleDateString()}
                     </span>
                   </div>
