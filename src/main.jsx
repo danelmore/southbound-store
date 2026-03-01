@@ -12,6 +12,12 @@ function SouthboundSalvage() {
   const [selectedImage, setSelectedImage] = useState(null); 
 
   useEffect(() => {
+    // Inject Google Font for reliable cursive
+    const link = document.createElement('link');
+    link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+
     const fetchPublicInventory = async () => {
       try {
         const { data, error } = await supabase
@@ -32,9 +38,6 @@ function SouthboundSalvage() {
     fetchPublicInventory();
   }, []);
 
-  // --- STYLING (MOBILE-FRIENDLY BACKGROUND FIX) ---
-  
-  // 1. The new dedicated background layer
   const fixedBackgroundStyle = {
     position: 'fixed',
     top: 0,
@@ -44,10 +47,9 @@ function SouthboundSalvage() {
     backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/marsh.jpg')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    zIndex: -1, // Pushes it behind everything else
+    zIndex: -1, 
   };
 
-  // 2. The page wrapper (removed the background image from here)
   const pageStyle = {
     color: '#e0e0e0',
     minHeight: '100vh',
@@ -58,14 +60,14 @@ function SouthboundSalvage() {
   const headerStyle = {
     textAlign: 'center',
     marginBottom: '40px',
-    borderBottom: '2px solid #d4af37', 
+    borderBottom: '3px solid #003366', 
     paddingBottom: '25px',
     maxWidth: '700px', 
     margin: '0 auto 40px auto',
-    background: 'rgba(0,0,0,0.65)', 
+    background: '#ffffff', 
     borderRadius: '12px',
     paddingTop: '25px',
-    backdropFilter: 'blur(8px)', 
+    boxShadow: '0 8px 30px rgba(0,0,0,0.6)', 
   };
 
   const gridStyle = {
@@ -105,22 +107,30 @@ function SouthboundSalvage() {
 
   return (
     <>
-      {/* Our new mobile-safe background layer */}
       <div style={fixedBackgroundStyle}></div>
 
       <div style={pageStyle}>
         <header style={headerStyle}>
-          <h1 style={{ color: '#d4af37', fontSize: '2.2em', margin: '0 0 10px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
+          {/* UPDATED: Great Vibes Cursive Font */}
+          <h1 style={{ 
+            color: '#003366', 
+            fontSize: '4.5em', 
+            margin: '0 0 5px 0', 
+            fontFamily: "'Great Vibes', cursive", 
+            fontWeight: 'normal',
+            lineHeight: '1.1'
+          }}>
             Southbound Salvage
           </h1>
-          <p style={{ fontSize: '1em', color: '#ccc', margin: 0, letterSpacing: '1px' }}>
+          
+          <p style={{ fontSize: '1.1em', color: '#003366', margin: 0, letterSpacing: '1px', fontWeight: 'bold' }}>
             Vintage Goods & Curated Collectibles
           </p>
 
-          <div style={{ marginTop: '20px', fontSize: '0.9em', color: '#ddd', lineHeight: '1.8', borderTop: '1px solid rgba(212, 175, 55, 0.3)', paddingTop: '15px', paddingLeft: '20px', paddingRight: '20px' }}>
+          <div style={{ marginTop: '20px', fontSize: '0.9em', color: '#003366', lineHeight: '1.8', borderTop: '1px solid rgba(0, 51, 102, 0.2)', paddingTop: '15px', paddingLeft: '20px', paddingRight: '20px' }}>
             <strong style={{ letterSpacing: '1px' }}>CONTACT US</strong><br/>
-            <a href="mailto:danelmore68@gmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>danelmore68@gmail.com</a> &nbsp;|&nbsp; <a href="mailto:lauraelmore1@hotmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>lauraelmore1@hotmail.com</a><br/>
-            Text: <a href="tel:9123127432" style={{ color: '#d4af37', textDecoration: 'none' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#d4af37', textDecoration: 'none' }}>(404) 721-9920</a>
+            <a href="mailto:danelmore68@gmail.com" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>danelmore68@gmail.com</a> &nbsp;|&nbsp; <a href="mailto:lauraelmore1@hotmail.com" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>lauraelmore1@hotmail.com</a><br/>
+            Text: <a href="tel:9123127432" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(404) 721-9920</a>
           </div>
         </header>
 
