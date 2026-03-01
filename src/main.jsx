@@ -32,15 +32,23 @@ function SouthboundSalvage() {
     fetchPublicInventory();
   }, []);
 
-  // --- STYLING (LOCAL IMAGE FIX) ---
-  const pageStyle = {
-    backgroundColor: '#1a1a1a', 
-    // This now looks directly inside your public folder for marsh.jpg
+  // --- STYLING (MOBILE-FRIENDLY BACKGROUND FIX) ---
+  
+  // 1. The new dedicated background layer
+  const fixedBackgroundStyle = {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
     backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/marsh.jpg')",
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'fixed',
+    zIndex: -1, // Pushes it behind everything else
+  };
+
+  // 2. The page wrapper (removed the background image from here)
+  const pageStyle = {
     color: '#e0e0e0',
     minHeight: '100vh',
     padding: '40px 20px',
@@ -96,67 +104,71 @@ function SouthboundSalvage() {
   };
 
   return (
-    <div style={pageStyle}>
-      <header style={headerStyle}>
-        <h1 style={{ color: '#d4af37', fontSize: '2.2em', margin: '0 0 10px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
-          Southbound Salvage
-        </h1>
-        <p style={{ fontSize: '1em', color: '#ccc', margin: 0, letterSpacing: '1px' }}>
-          Vintage Goods & Curated Collectibles
-        </p>
+    <>
+      {/* Our new mobile-safe background layer */}
+      <div style={fixedBackgroundStyle}></div>
 
-        {/* --- CONTACT INFO BLOCK --- */}
-        <div style={{ marginTop: '20px', fontSize: '0.9em', color: '#ddd', lineHeight: '1.8', borderTop: '1px solid rgba(212, 175, 55, 0.3)', paddingTop: '15px', paddingLeft: '20px', paddingRight: '20px' }}>
-          <strong style={{ letterSpacing: '1px' }}>CONTACT US</strong><br/>
-          <a href="mailto:danelmore68@gmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>danelmore68@gmail.com</a> &nbsp;|&nbsp; <a href="mailto:lauraelmore1@hotmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>lauraelmore1@hotmail.com</a><br/>
-          Text: <a href="tel:9123127432" style={{ color: '#d4af37', textDecoration: 'none' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#d4af37', textDecoration: 'none' }}>(404) 721-9920</a>
-        </div>
-      </header>
+      <div style={pageStyle}>
+        <header style={headerStyle}>
+          <h1 style={{ color: '#d4af37', fontSize: '2.2em', margin: '0 0 10px 0', letterSpacing: '2px', textTransform: 'uppercase' }}>
+            Southbound Salvage
+          </h1>
+          <p style={{ fontSize: '1em', color: '#ccc', margin: 0, letterSpacing: '1px' }}>
+            Vintage Goods & Curated Collectibles
+          </p>
 
-      {loading ? (
-        <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#d4af37' }}>Loading Inventory...</div>
-      ) : (
-        <div style={gridStyle}>
-          {inventory.map(item => (
-            <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
-              
-              <div 
-                onClick={() => item.photo && setSelectedImage(item.photo)}
-                style={{ height: '140px', background: '#111', cursor: item.photo ? 'zoom-in' : 'default', position: 'relative' }}
-              >
-                {item.photo ? (
-                  <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>No Image</div>
-                )}
+          <div style={{ marginTop: '20px', fontSize: '0.9em', color: '#ddd', lineHeight: '1.8', borderTop: '1px solid rgba(212, 175, 55, 0.3)', paddingTop: '15px', paddingLeft: '20px', paddingRight: '20px' }}>
+            <strong style={{ letterSpacing: '1px' }}>CONTACT US</strong><br/>
+            <a href="mailto:danelmore68@gmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>danelmore68@gmail.com</a> &nbsp;|&nbsp; <a href="mailto:lauraelmore1@hotmail.com" style={{ color: '#d4af37', textDecoration: 'none' }}>lauraelmore1@hotmail.com</a><br/>
+            Text: <a href="tel:9123127432" style={{ color: '#d4af37', textDecoration: 'none' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#d4af37', textDecoration: 'none' }}>(404) 721-9920</a>
+          </div>
+        </header>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#d4af37' }}>Loading Inventory...</div>
+        ) : (
+          <div style={gridStyle}>
+            {inventory.map(item => (
+              <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
                 
-                {item.sold && (
-                  <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                    SOLD
-                  </div>
-                )}
-              </div>
+                <div 
+                  onClick={() => item.photo && setSelectedImage(item.photo)}
+                  style={{ height: '140px', background: '#111', cursor: item.photo ? 'zoom-in' : 'default', position: 'relative' }}
+                >
+                  {item.photo ? (
+                    <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#555' }}>No Image</div>
+                  )}
+                  
+                  {item.sold && (
+                    <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                      SOLD
+                    </div>
+                  )}
+                </div>
 
-              <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                <h2 style={{ margin: '0 0 6px 0', fontSize: '1.1em', color: 'white' }}>{item.name}</h2>
-                <div style={{ color: '#aaa', fontSize: '0.8em', marginBottom: '10px', flexGrow: 1, maxHeight: '40px', overflow: 'hidden' }}>{item.desc}</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #444', paddingTop: '10px' }}>
-                  <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: item.sold ? '#aaa' : '#d4af37' }}>
-                    ${item.price}
-                  </span>
-                  <span style={{ fontSize: '0.7em', color: '#666' }}>
-                    {new Date(item.created_at).toLocaleDateString()}
-                  </span>
+                <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                  <h2 style={{ margin: '0 0 6px 0', fontSize: '1.1em', color: 'white' }}>{item.name}</h2>
+                  <div style={{ color: '#aaa', fontSize: '0.8em', marginBottom: '10px', flexGrow: 1, maxHeight: '40px', overflow: 'hidden' }}>{item.desc}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #444', paddingTop: '10px' }}>
+                    <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: item.sold ? '#aaa' : '#d4af37' }}>
+                      ${item.price}
+                    </span>
+                    <span style={{ fontSize: '0.7em', color: '#666' }}>
+                      {new Date(item.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
-      <ImageModal />
+        <ImageModal />
 
-    </div>
+      </div>
+    </>
   );
 }
 
