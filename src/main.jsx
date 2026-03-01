@@ -50,7 +50,7 @@ function SouthboundSalvage() {
   };
 
   const pageStyle = {
-    color: '#003366', // Global text color now blue
+    color: '#003366', 
     minHeight: '100vh',
     padding: '40px 20px',
     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif'
@@ -77,9 +77,8 @@ function SouthboundSalvage() {
     margin: '0 auto'
   };
 
-  // --- UPDATED: Card style is now white with blue text ---
   const cardStyle = {
-    background: '#ffffff', // White box for items
+    background: '#ffffff', 
     borderRadius: '12px',
     overflow: 'hidden',
     boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
@@ -87,6 +86,19 @@ function SouthboundSalvage() {
     flexDirection: 'column',
     position: 'relative',
     border: '1px solid rgba(0, 51, 102, 0.1)'
+  };
+
+  // --- UPDATED: Navy Blue Vertical Stripes ---
+  const imageContainerStyle = {
+    height: '180px',
+    cursor: 'zoom-in',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '12px', 
+    // Uses the exact Navy Blue #003366 from the header
+    background: 'repeating-linear-gradient(90deg, #ffffff, #ffffff 20px, rgba(0, 51, 102, 0.2) 20px, rgba(0, 51, 102, 0.2) 40px)'
   };
 
   const ImageModal = () => {
@@ -143,22 +155,25 @@ function SouthboundSalvage() {
                 
                 <div 
                   onClick={() => item.photo && setSelectedImage(item.photo)}
-                  style={{ height: '160px', background: '#f0f0f0', cursor: item.photo ? 'zoom-in' : 'default', position: 'relative' }}
+                  style={imageContainerStyle}
                 >
                   {item.photo ? (
-                    <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img 
+                      src={item.photo} 
+                      alt={item.name} 
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', position: 'relative', zIndex: 1 }} 
+                    />
                   ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ccc' }}>No Image</div>
+                    <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
                   )}
                   
                   {item.sold && (
-                    <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                    <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', boxShadow: '0 2px 4px rgba(0,0,0,0.3)', zIndex: 10 }}>
                       SOLD
                     </div>
                   )}
                 </div>
 
-                {/* --- UPDATED: Text inside card is now Navy Blue --- */}
                 <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                   <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
                   <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
