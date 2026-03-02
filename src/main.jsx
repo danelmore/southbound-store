@@ -56,6 +56,7 @@ function SouthboundSalvage() {
     fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif'
   };
 
+  // --- UPDATED: Header Style with DARKER Blue Willow Crab Watermark ---
   const headerStyle = {
     textAlign: 'center',
     marginBottom: '40px',
@@ -63,10 +64,17 @@ function SouthboundSalvage() {
     paddingBottom: '25px',
     maxWidth: '700px', 
     margin: '0 auto 40px auto',
-    background: '#ffffff', 
     borderRadius: '12px',
     paddingTop: '25px',
     boxShadow: '0 8px 30px rgba(0,0,0,0.6)', 
+    position: 'relative',
+    overflow: 'hidden',
+    backgroundColor: '#ffffff',
+    // We changed 0.88 to 0.75 below to make the crab pop more
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('https://rswzqpppadhlmccmowhr.supabase.co/storage/v1/object/public/assests/image0-removebg-preview.png')`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    backgroundSize: '350px auto' 
   };
 
   const gridStyle = {
@@ -88,7 +96,6 @@ function SouthboundSalvage() {
     border: '1px solid rgba(0, 51, 102, 0.1)'
   };
 
-  // --- UPDATED: Navy Blue Vertical Stripes ---
   const imageContainerStyle = {
     height: '180px',
     cursor: 'zoom-in',
@@ -97,7 +104,6 @@ function SouthboundSalvage() {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '12px', 
-    // Uses the exact Navy Blue #003366 from the header
     background: 'repeating-linear-gradient(90deg, #ffffff, #ffffff 20px, rgba(0, 51, 102, 0.2) 20px, rgba(0, 51, 102, 0.2) 40px)'
   };
 
