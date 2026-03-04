@@ -39,7 +39,6 @@ function SouthboundSalvage() {
     };
 
     // 3. Visitor Counter Logic
-    // We only use /up (increment) if the site is NOT running on your local machine
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     const endpoint = isLocal ? 'get' : 'up'; 
     
@@ -74,6 +73,19 @@ function SouthboundSalvage() {
     position: 'relative', overflow: 'hidden', backgroundColor: '#ffffff',
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('https://rswzqpppadhlmccmowhr.supabase.co/storage/v1/object/public/assests/image0-removebg-preview.png')`,
     backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '350px auto'
+  };
+
+  const infoSectionStyle = {
+    maxWidth: '800px',
+    margin: '0 auto 30px auto',
+    textAlign: 'center',
+    color: '#003366',
+    padding: '15px',
+    borderTop: '1px solid rgba(0, 51, 102, 0.2)',
+    borderBottom: '1px solid rgba(0, 51, 102, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderRadius: '8px',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
   };
 
   const gridStyle = {
@@ -132,6 +144,16 @@ function SouthboundSalvage() {
             Text: <a href="tel:9123127432" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(404) 721-9920</a>
           </div>
         </header>
+
+        {/* --- Payment & Shipping Info Section --- */}
+        <div style={infoSectionStyle}>
+          <p style={{ margin: '0', fontSize: '1.2em', fontWeight: 'bold', lineHeight: '1.6' }}>
+            We accept Multiple forms of payment.<br />
+            <span style={{ fontSize: '1em', fontWeight: 'normal' }}>
+              Local pickup in <strong>Temple, GA</strong>. We can also ship at buyers cost.
+            </span>
+          </p>
+        </div>
 
         {loading ? (
           <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#ffffff', marginTop: '100px' }}>Loading Inventory...</div>
