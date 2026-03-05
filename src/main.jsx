@@ -80,12 +80,12 @@ function SouthboundSalvage() {
     margin: '0 auto 30px auto',
     textAlign: 'center',
     color: '#003366',
-    padding: '15px',
-    borderTop: '1px solid rgba(0, 51, 102, 0.2)',
-    borderBottom: '1px solid rgba(0, 51, 102, 0.2)',
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
-    borderRadius: '8px',
-    boxShadow: '0 4px 15px rgba(0,0,0,0.2)'
+    padding: '20px',
+    borderTop: '2px solid #003366',
+    borderBottom: '2px solid #003366',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    borderRadius: '12px',
+    boxShadow: '0 6px 20px rgba(0,0,0,0.3)'
   };
 
   const gridStyle = {
@@ -145,8 +145,11 @@ function SouthboundSalvage() {
           </div>
         </header>
 
-        {/* --- Payment & Shipping Info Section --- */}
+        {/* --- Order, Payment & Shipping Info Section --- */}
         <div style={infoSectionStyle}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '1.6em', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px' }}>
+            Contact us to order
+          </p>
           <p style={{ margin: '0', fontSize: '1.2em', fontWeight: 'bold', lineHeight: '1.6' }}>
             We accept Multiple forms of payment.<br />
             <span style={{ fontSize: '1em', fontWeight: 'normal' }}>
