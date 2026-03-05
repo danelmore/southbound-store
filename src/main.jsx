@@ -12,6 +12,7 @@ function SouthboundSalvage() {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [visitCount, setVisitCount] = useState(null);
+  const [showAbout, setShowAbout] = useState(false);
 
   useEffect(() => {
     // 1. Load Fonts
@@ -20,7 +21,7 @@ function SouthboundSalvage() {
     link.rel = 'stylesheet';
     document.head.appendChild(link);
 
-    // 2. Fetch Inventory from Supabase
+    // 2. Fetch Inventory
     const fetchPublicInventory = async () => {
       try {
         const { data, error } = await supabase
@@ -38,7 +39,7 @@ function SouthboundSalvage() {
       }
     };
 
-    // 3. Visitor Counter Logic
+    // 3. Visitor Counter
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     const endpoint = isLocal ? 'get' : 'up'; 
     
@@ -67,25 +68,39 @@ function SouthboundSalvage() {
   };
 
   const headerStyle = {
-    textAlign: 'center', marginBottom: '40px', borderBottom: '3px solid #003366',
-    paddingBottom: '25px', maxWidth: '700px', margin: '0 auto 40px auto',
+    textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #003366',
+    paddingBottom: '25px', maxWidth: '700px', margin: '0 auto 20px auto',
     borderRadius: '12px', paddingTop: '25px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
     position: 'relative', overflow: 'hidden', backgroundColor: '#ffffff',
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('https://rswzqpppadhlmccmowhr.supabase.co/storage/v1/object/public/assests/image0-removebg-preview.png')`,
     backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '350px auto'
   };
 
-  const infoSectionStyle = {
-    maxWidth: '800px',
-    margin: '0 auto 30px auto',
+  // Small White Box for the "About Us" Trigger
+  const aboutTriggerStyle = {
+    maxWidth: '150px',
+    margin: '0 auto 20px auto',
+    backgroundColor: '#ffffff',
+    padding: '10px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
     textAlign: 'center',
-    color: '#003366',
-    padding: '20px',
-    borderTop: '2px solid #003366',
-    borderBottom: '2px solid #003366',
-    backgroundColor: 'rgba(255, 255, 255, 0.85)',
-    borderRadius: '12px',
-    boxShadow: '0 6px 20px rgba(0,0,0,0.3)'
+    cursor: 'pointer',
+    border: '1px solid rgba(0, 51, 102, 0.1)'
+  };
+
+  const aboutContentStyle = {
+    maxWidth: '700px', margin: '0 auto 30px auto', textAlign: 'center',
+    color: '#003366', padding: '25px', backgroundColor: '#ffffff',
+    borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+    lineHeight: '1.7', border: '2px solid #003366'
+  };
+
+  const infoSectionStyle = {
+    maxWidth: '800px', margin: '0 auto 30px auto', textAlign: 'center',
+    color: '#003366', padding: '20px', borderTop: '2px solid #003366',
+    borderBottom: '2px solid #003366', backgroundColor: '#ffffff',
+    borderRadius: '12px', boxShadow: '0 6px 20px rgba(0,0,0,0.3)'
   };
 
   const gridStyle = {
@@ -144,6 +159,29 @@ function SouthboundSalvage() {
             Text: <a href="tel:9123127432" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(912) 312-7432</a> &nbsp;|&nbsp; <a href="tel:4047219920" style={{ color: '#003366', textDecoration: 'none', fontWeight: 'bold' }}>(404) 721-9920</a>
           </div>
         </header>
+
+        {/* --- About Us Toggle Section --- */}
+        <div 
+          onClick={() => setShowAbout(!showAbout)} 
+          style={aboutTriggerStyle}
+        >
+          <span style={{ color: '#003366', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9em' }}>
+            {showAbout ? 'Close' : 'About Us'}
+          </span>
+        </div>
+
+        {showAbout && (
+          <div style={aboutContentStyle}>
+            <p style={{ fontSize: '1.5em', fontWeight: 'bold', marginBottom: '15px' }}>
+              Old barns. Estate sales. Attic corners. We find it all.
+            </p>
+            <p style={{ fontSize: '1.15em', fontStyle: 'italic' }}>
+              We travel far and wide to bring you a hand-selected mix of vintage, antique, and unique items. 
+              Our inventory is constantly changing because we are always on the hunt—buying everything 
+              from rare collectibles to rustic barn treasures. If it’s old, rare, or just plain cool, it has a home here.
+            </p>
+          </div>
+        )}
 
         {/* --- Order, Payment & Shipping Info Section --- */}
         <div style={infoSectionStyle}>
