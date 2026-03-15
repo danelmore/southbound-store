@@ -13,15 +13,14 @@ function SouthboundSalvage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [visitCount, setVisitCount] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [filterNew, setFilterNew] = useState(false); // New state for filtering
 
   useEffect(() => {
-    // 1. Load Fonts
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Courier+Prime:wght@700&display=swap';
     link.rel = 'stylesheet';
     document.head.appendChild(link);
 
-    // 2. Fetch Inventory
     const fetchPublicInventory = async () => {
       try {
         const { data, error } = await supabase
@@ -39,7 +38,6 @@ function SouthboundSalvage() {
       }
     };
 
-    // 3. Visitor Counter
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
     const endpoint = isLocal ? 'get' : 'up'; 
     
@@ -54,6 +52,17 @@ function SouthboundSalvage() {
 
     fetchPublicInventory();
   }, []);
+
+  // --- Logic for New Arrivals (48 Hour Window) ---
+  const isNewItem = (createdAt) => {
+    const itemDate = new Date(createdAt);
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    return itemDate > fortyEightHoursAgo;
+  };
+
+  const displayedInventory = filterNew 
+    ? inventory.filter(item => isNewItem(item.created_at))
+    : inventory;
 
   // --- Styling ---
   const fixedBackgroundStyle = {
@@ -76,18 +85,25 @@ function SouthboundSalvage() {
     backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '350px auto'
   };
 
-  // Small White Box for the "About Us" Trigger
-  const aboutTriggerStyle = {
-    maxWidth: '150px',
-    margin: '0 auto 20px auto',
-    backgroundColor: '#ffffff',
-    padding: '10px',
+  const buttonContainerStyle = {
+    display: 'flex', justifyContent: 'center', gap: '15px', maxWidth: '400px', margin: '0 auto 20px auto'
+  };
+
+  const toggleButtonStyle = (isActive) => ({
+    backgroundColor: isActive ? '#003366' : '#ffffff',
+    color: isActive ? '#ffffff' : '#003366',
+    padding: '10px 15px',
     borderRadius: '8px',
     boxShadow: '0 4px 15px rgba(0,0,0,0.3)',
     textAlign: 'center',
     cursor: 'pointer',
-    border: '1px solid rgba(0, 51, 102, 0.1)'
-  };
+    border: '1px solid #003366',
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    fontSize: '0.8em',
+    transition: 'all 0.2s ease'
+  });
 
   const aboutContentStyle = {
     maxWidth: '700px', margin: '0 auto 30px auto', textAlign: 'center',
@@ -160,14 +176,14 @@ function SouthboundSalvage() {
           </div>
         </header>
 
-        {/* --- About Us Toggle Section --- */}
-        <div 
-          onClick={() => setShowAbout(!showAbout)} 
-          style={aboutTriggerStyle}
-        >
-          <span style={{ color: '#003366', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', fontSize: '0.9em' }}>
+        {/* --- Buttons Section --- */}
+        <div style={buttonContainerStyle}>
+          <div onClick={() => { setShowAbout(!showAbout); setFilterNew(false); }} style={toggleButtonStyle(showAbout)}>
             {showAbout ? 'Close' : 'About Us'}
-          </span>
+          </div>
+          <div onClick={() => { setFilterNew(!filterNew); setShowAbout(false); }} style={toggleButtonStyle(filterNew)}>
+            {filterNew ? 'Show All' : 'New Arrivals'}
+          </div>
         </div>
 
         {showAbout && (
@@ -177,19 +193,17 @@ function SouthboundSalvage() {
             </p>
             <p style={{ fontSize: '1.15em', fontStyle: 'italic' }}>
               We travel far and wide to bring you a hand-selected mix of vintage, antique, and unique items. 
-              Our inventory is constantly changing because we are always on the hunt—buying everything 
-              from rare collectibles to rustic barn treasures. If it’s old, rare, or just plain cool, it has a home here.
+              Our inventory is constantly changing because we are always on the hunt.
             </p>
           </div>
         )}
 
-        {/* --- Order, Payment & Shipping Info Section --- */}
         <div style={infoSectionStyle}>
           <p style={{ margin: '0 0 10px 0', fontSize: '1.6em', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '2px' }}>
-            Contact us to order
+            {filterNew ? 'Fresh Finds' : 'Contact us to order'}
           </p>
           <p style={{ margin: '0', fontSize: '1.2em', fontWeight: 'bold', lineHeight: '1.6' }}>
-            We accept Multiple forms of payment.<br />
+            {filterNew ? 'Items added in the last 48 hours' : 'We accept Multiple forms of payment.'}<br />
             <span style={{ fontSize: '1em', fontWeight: 'normal' }}>
               Local pickup in <strong>Temple, GA</strong>. We can also ship at buyers cost.
             </span>
@@ -200,30 +214,42 @@ function SouthboundSalvage() {
           <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#ffffff', marginTop: '100px' }}>Loading Inventory...</div>
         ) : (
           <>
-            <div style={gridStyle}>
-              {inventory.map(item => (
-                <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
-                  <div onClick={() => item.photo && setSelectedImage(item.photo)} style={imageContainerStyle}>
-                    {item.photo ? (
-                      <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', position: 'relative', zIndex: 1 }} />
-                    ) : (
-                      <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
-                    )}
-                    {item.sold && (
-                      <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>SOLD</div>
-                    )}
-                  </div>
-                  <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
-                    <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
-                      <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
-                      <span style={{ fontSize: '0.7em', color: '#888' }}>{new Date(item.created_at).toLocaleDateString()}</span>
+            {displayedInventory.length === 0 && filterNew ? (
+              <div style={{ textAlign: 'center', color: '#ffffff', padding: '40px', fontSize: '1.2em', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', maxWidth: '500px', margin: '0 auto' }}>
+                No new items in the last 48 hours. Check back soon or view our full inventory!
+              </div>
+            ) : (
+              <div style={gridStyle}>
+                {displayedInventory.map(item => (
+                  <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
+                    <div onClick={() => item.photo && setSelectedImage(item.photo)} style={imageContainerStyle}>
+                      {item.photo ? (
+                        <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', position: 'relative', zIndex: 1 }} />
+                      ) : (
+                        <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
+                      )}
+                      
+                      {/* --- "NEW" Badge --- */}
+                      {!item.sold && isNewItem(item.created_at) && (
+                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#003366', color: 'white', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '10px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</div>
+                      )}
+
+                      {item.sold && (
+                        <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>SOLD</div>
+                      )}
+                    </div>
+                    <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                      <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
+                      <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
+                        <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
+                        <span style={{ fontSize: '0.7em', color: '#888' }}>{new Date(item.created_at).toLocaleDateString()}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             <footer style={counterStyle}>
               OFFICIAL VISITOR COUNT 
