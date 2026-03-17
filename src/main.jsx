@@ -94,9 +94,10 @@ function SouthboundSalvage() {
     ? inventory.filter(item => isNewItem(item.created_at))
     : inventory;
 
+  // --- Background Styling Updated ---
   const fixedBackgroundStyle = {
     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
-    backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/marsh.jpg')",
+    backgroundImage: "linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.4)), url('/lauraiscrazy.jpeg')",
     backgroundSize: 'cover', backgroundPosition: 'center', zIndex: -1,
   };
 
@@ -108,7 +109,7 @@ function SouthboundSalvage() {
   const headerStyle = {
     textAlign: 'center', marginBottom: '20px', borderBottom: '3px solid #003366',
     paddingBottom: '25px', maxWidth: '700px', margin: '0 auto 20px auto',
-    borderRadius: '12px', paddingTop: '25px', boxShadow: '0 8px 30px rgba(0,0,0,0.6)',
+    borderRadius: '12px', paddingTop: '25px', boxShadow: '0 8px 30px rgba(0,0,0,0.4)',
     position: 'relative', overflow: 'hidden', backgroundColor: '#ffffff',
     backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.75)), url('https://rswzqpppadhlmccmowhr.supabase.co/storage/v1/object/public/assests/image0-removebg-preview.png')`,
     backgroundRepeat: 'no-repeat', backgroundPosition: 'center', backgroundSize: '350px auto'
@@ -166,8 +167,9 @@ function SouthboundSalvage() {
   };
 
   const counterStyle = {
-    marginTop: '60px', textAlign: 'center', color: '#ffffff',
-    fontSize: '0.9em', opacity: 0.9, letterSpacing: '1px', paddingBottom: '40px'
+    marginTop: '60px', textAlign: 'center', color: '#003366',
+    fontSize: '0.9em', opacity: 0.9, letterSpacing: '1px', paddingBottom: '40px',
+    fontWeight: 'bold'
   };
 
   const odometerStyle = {
@@ -239,11 +241,11 @@ function SouthboundSalvage() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#ffffff', marginTop: '100px' }}>Loading Inventory...</div>
+          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#003366', marginTop: '100px', fontWeight: 'bold' }}>Loading Inventory...</div>
         ) : (
           <>
             {displayedInventory.length === 0 && filterNew ? (
-              <div style={{ textAlign: 'center', color: '#ffffff', padding: '40px', fontSize: '1.2em', background: 'rgba(0,0,0,0.3)', borderRadius: '12px', maxWidth: '500px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', color: '#003366', padding: '40px', fontSize: '1.2em', background: 'rgba(255,255,255,0.8)', borderRadius: '12px', maxWidth: '500px', margin: '0 auto', border: '1px solid #003366' }}>
                 No new items in the last 48 hours. Check back soon or view our full inventory!
               </div>
             ) : (
