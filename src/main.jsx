@@ -21,7 +21,6 @@ function SouthboundSalvage() {
     const query = new URLSearchParams(window.location.search);
     if (query.get("success")) {
       alert("Thank you for your purchase! We've received your order and will be in touch shortly to coordinate shipping or pickup.");
-      // Removes the success flag from URL without reloading the page
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
@@ -62,7 +61,6 @@ function SouthboundSalvage() {
     fetchPublicInventory();
   }, []);
 
-  // --- Automated Stripe Checkout ---
   const handleCheckout = async (item) => {
     setCheckoutLoading(item.id);
     try {
@@ -86,7 +84,6 @@ function SouthboundSalvage() {
     }
   };
 
-  // --- Logic for New Arrivals (48 Hour Window) ---
   const isNewItem = (createdAt) => {
     const itemDate = new Date(createdAt);
     const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
@@ -97,7 +94,6 @@ function SouthboundSalvage() {
     ? inventory.filter(item => isNewItem(item.created_at))
     : inventory;
 
-  // --- Styling ---
   const fixedBackgroundStyle = {
     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
     backgroundImage: "linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/marsh.jpg')",
@@ -209,7 +205,6 @@ function SouthboundSalvage() {
           </div>
         </header>
 
-        {/* --- Buttons Section --- */}
         <div style={buttonContainerStyle}>
           <div onClick={() => { setShowAbout(!showAbout); setFilterNew(false); }} style={toggleButtonStyle(showAbout)}>
             {showAbout ? 'Close' : 'About Us'}
@@ -262,7 +257,6 @@ function SouthboundSalvage() {
                         <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
                       )}
                       
-                      {/* --- "NEW" Badge --- */}
                       {!item.sold && isNewItem(item.created_at) && (
                         <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#003366', color: 'white', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '10px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</div>
                       )}
@@ -275,19 +269,16 @@ function SouthboundSalvage() {
                       <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
                       <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
                       
-                      {/* --- Pricing and Buy Now Button --- */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
                         <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
                         
                         {!item.sold ? (
                           item.shipping_size === 'pickup' ? (
-                            /* --- LOCAL PICKUP MESSAGE --- */
                             <div style={{ textAlign: 'right' }}>
                               <span style={{ fontSize: '0.85em', color: '#003366', fontWeight: 'bold', display: 'block' }}>LOCAL PICKUP ONLY</span>
                               <span style={{ fontSize: '0.7em', color: '#666', fontStyle: 'italic' }}>Temple, GA</span>
                             </div>
                           ) : (
-                            /* --- STANDARD BUY NOW BUTTON --- */
                             <button 
                               onClick={() => handleCheckout(item)}
                               disabled={checkoutLoading === item.id}
@@ -302,7 +293,6 @@ function SouthboundSalvage() {
                             </button>
                           )
                         ) : (
-                          /* --- SOLD OUT MESSAGE --- */
                           <span style={{ fontSize: '0.8em', color: '#FF3B30', fontWeight: 'bold' }}>SOLD OUT</span>
                         )}
                       </div>
