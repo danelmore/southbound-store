@@ -13,9 +13,18 @@ function SouthboundSalvage() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [visitCount, setVisitCount] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
-  const [filterNew, setFilterNew] = useState(false); // New state for filtering
+  const [filterNew, setFilterNew] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(null);
 
   useEffect(() => {
+    // --- Check for Stripe Success ---
+    const query = new URLSearchParams(window.location.search);
+    if (query.get("success")) {
+      alert("Thank you for your purchase! We've received your order and will be in touch shortly to coordinate shipping or pickup.");
+      // Removes the success flag from URL without reloading the page
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
     const link = document.createElement('link');
     link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Courier+Prime:wght@700&display=swap';
     link.rel = 'stylesheet';
@@ -52,6 +61,30 @@ function SouthboundSalvage() {
 
     fetchPublicInventory();
   }, []);
+
+  // --- Automated Stripe Checkout ---
+  const handleCheckout = async (item) => {
+    setCheckoutLoading(item.id);
+    try {
+      const { data, error } = await supabase.functions.invoke('checkout', {
+        body: {
+          item_name: item.name,
+          price: item.price,
+          shipping_size: item.shipping_size || 'medium'
+        }
+      });
+
+      if (error) throw error;
+      
+      if (data?.url) {
+        window.location.href = data.url; 
+      }
+    } catch (err) {
+      console.error("Checkout error:", err);
+      alert("There was an issue starting checkout. Please try again.");
+      setCheckoutLoading(null);
+    }
+  };
 
   // --- Logic for New Arrivals (48 Hour Window) ---
   const isNewItem = (createdAt) => {
@@ -241,10 +274,39 @@ function SouthboundSalvage() {
                     <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
                       <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
                       <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
+                      
+                      {/* --- Pricing and Buy Now Button --- */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
                         <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
-                        <span style={{ fontSize: '0.7em', color: '#888' }}>{new Date(item.created_at).toLocaleDateString()}</span>
+                        
+                        {!item.sold ? (
+                          item.shipping_size === 'pickup' ? (
+                            /* --- LOCAL PICKUP MESSAGE --- */
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '0.85em', color: '#003366', fontWeight: 'bold', display: 'block' }}>LOCAL PICKUP ONLY</span>
+                              <span style={{ fontSize: '0.7em', color: '#666', fontStyle: 'italic' }}>Temple, GA</span>
+                            </div>
+                          ) : (
+                            /* --- STANDARD BUY NOW BUTTON --- */
+                            <button 
+                              onClick={() => handleCheckout(item)}
+                              disabled={checkoutLoading === item.id}
+                              style={{
+                                backgroundColor: checkoutLoading === item.id ? '#888' : '#28a745',
+                                color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px',
+                                fontWeight: 'bold', cursor: checkoutLoading === item.id ? 'wait' : 'pointer',
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)', transition: 'background-color 0.2s'
+                              }}
+                            >
+                              {checkoutLoading === item.id ? 'Loading...' : 'Buy Now'}
+                            </button>
+                          )
+                        ) : (
+                          /* --- SOLD OUT MESSAGE --- */
+                          <span style={{ fontSize: '0.8em', color: '#FF3B30', fontWeight: 'bold' }}>SOLD OUT</span>
+                        )}
                       </div>
+
                     </div>
                   </div>
                 ))}
