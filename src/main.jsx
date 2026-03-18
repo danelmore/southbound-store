@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { createClient } from '@supabase/supabase-js';
 
@@ -6,6 +6,160 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://rswzqpppadhlmccmowhr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJzd3pxcHBwYWRobG1jY21vd2hyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzMjQzMTEsImV4cCI6MjA4NzkwMDMxMX0.exjFS1t_Q1gcXK6YbeDNQJwVS7JLn0ZB81XqPeq2Up8';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// Add shimmer animation to document
+const shimmerStyle = document.createElement('style');
+shimmerStyle.textContent = `
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+`;
+document.head.appendChild(shimmerStyle);
+
+// Preconnect to critical domains
+const preconnectDomains = [
+  'https://rswzqpppadhlmccmowhr.supabase.co',
+  'https://fonts.googleapis.com',
+  'https://fonts.gstatic.com'
+];
+
+preconnectDomains.forEach(href => {
+  const link = document.createElement('link');
+  link.rel = 'preconnect';
+  link.href = href;
+  link.crossOrigin = 'anonymous';
+  document.head.appendChild(link);
+});
+
+// Preload fonts
+const fontLink = document.createElement('link');
+fontLink.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Courier+Prime:wght@700&display=swap';
+fontLink.rel = 'stylesheet';
+document.head.appendChild(fontLink);
+
+// Optimized Image Component with lazy loading
+const OptimizedImage = ({ src, alt, style, onClick, priority = false }) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const imgRef = useRef(null);
+  const [isInView, setIsInView] = useState(priority);
+
+  useEffect(() => {
+    if (priority) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [priority]);
+
+  return (
+    <div ref={imgRef} style={{ ...style, position: 'relative' }}>
+      {!isLoaded && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+          backgroundSize: '200% 100%',
+          animation: 'shimmer 1.5s infinite',
+          borderRadius: style?.borderRadius || '4px'
+        }} />
+      )}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          style={{ ...style, opacity: isLoaded ? 1 : 0, transition: 'opacity 0.3s' }}
+          onClick={onClick}
+          loading={priority ? 'eager' : 'lazy'}
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+        />
+      )}
+    </div>
+  );
+};
+
+// Skeleton Card Component
+const SkeletonCard = () => (
+  <div style={{
+    background: '#ffffff',
+    borderRadius: '12px',
+    overflow: 'hidden',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+    display: 'flex',
+    flexDirection: 'column',
+    height: '320px',
+    border: '1px solid rgba(0, 51, 102, 0.1)'
+  }}>
+    <div style={{
+      height: '180px',
+      background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.5s infinite'
+    }} />
+    <div style={{ padding: '15px' }}>
+      <div style={{
+        height: '18px',
+        background: '#e0e0e0',
+        borderRadius: '4px',
+        marginBottom: '10px',
+        background: 'linear-gradient(90deg, #e8e8e8 25%, #d0d0d0 50%, #e8e8e8 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite'
+      }} />
+      <div style={{
+        height: '14px',
+        background: '#e0e0e0',
+        borderRadius: '4px',
+        marginBottom: '10px',
+        width: '80%',
+        background: 'linear-gradient(90deg, #e8e8e8 25%, #d0d0d0 50%, #e8e8e8 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite'
+      }} />
+      <div style={{
+        height: '28px',
+        background: '#e0e0e0',
+        borderRadius: '4px',
+        width: '40%',
+        marginTop: '15px',
+        background: 'linear-gradient(90deg, #e8e8e8 25%, #d0d0d0 50%, #e8e8e8 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite'
+      }} />
+    </div>
+  </div>
+);
+
+// Skeleton Grid Component
+const SkeletonGrid = () => (
+  <div style={{
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+    gap: '20px',
+    maxWidth: '900px',
+    margin: '0 auto'
+  }}>
+    {[...Array(8)].map((_, i) => (
+      <SkeletonCard key={i} />
+    ))}
+  </div>
+);
 
 function SouthboundSalvage() {
   const [inventory, setInventory] = useState([]);
@@ -15,19 +169,15 @@ function SouthboundSalvage() {
   const [showAbout, setShowAbout] = useState(false);
   const [filterNew, setFilterNew] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(8);
 
   useEffect(() => {
-    // --- Check for Stripe Success ---
+    // Check for Stripe Success
     const query = new URLSearchParams(window.location.search);
     if (query.get("success")) {
       alert("Thank you for your purchase! We've received your order and will be in touch shortly to coordinate shipping or pickup.");
       window.history.replaceState({}, document.title, window.location.pathname);
     }
-
-    const link = document.createElement('link');
-    link.href = 'https://fonts.googleapis.com/css2?family=Great+Vibes&family=Courier+Prime:wght@700&display=swap';
-    link.rel = 'stylesheet';
-    document.head.appendChild(link);
 
     const fetchPublicInventory = async () => {
       try {
@@ -61,17 +211,30 @@ function SouthboundSalvage() {
     fetchPublicInventory();
   }, []);
 
+  // Infinite scroll - load more items as user scrolls
+  useEffect(() => {
+    if (loading) return;
+    
+    const handleScroll = () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) {
+        setVisibleCount(prev => Math.min(prev + 8, displayedInventory.length));
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, inventory, filterNew]);
+
   const handleCheckout = async (item) => {
     setCheckoutLoading(item.id);
     try {
-      // Logic to ensure the correct string is sent to your Edge Function
       const shippingSize = item.shipping_size || 'medium';
 
       const { data, error } = await supabase.functions.invoke('checkout', {
         body: {
           item_name: item.name,
           price: item.price,
-          shipping_size: shippingSize // Will be 'small', 'medium', or 'large'
+          shipping_size: shippingSize
         }
       });
 
@@ -97,7 +260,9 @@ function SouthboundSalvage() {
     ? inventory.filter(item => isNewItem(item.created_at))
     : inventory;
 
-  // --- Background Styling ---
+  const visibleInventory = displayedInventory.slice(0, visibleCount);
+
+  // Styles
   const fixedBackgroundStyle = {
     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
     backgroundImage: "linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.4)), url('/lauraiscrazy.jpeg')",
@@ -244,7 +409,7 @@ function SouthboundSalvage() {
         </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', fontSize: '1.5em', color: '#003366', marginTop: '100px', fontWeight: 'bold' }}>Loading Inventory...</div>
+          <SkeletonGrid />
         ) : (
           <>
             {displayedInventory.length === 0 && filterNew ? (
@@ -252,60 +417,83 @@ function SouthboundSalvage() {
                 No new items in the last 48 hours. Check back soon or view our full inventory!
               </div>
             ) : (
-              <div style={gridStyle}>
-                {displayedInventory.map(item => (
-                  <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
-                    <div onClick={() => item.photo && setSelectedImage(item.photo)} style={imageContainerStyle}>
-                      {item.photo ? (
-                        <img src={item.photo} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', position: 'relative', zIndex: 1 }} />
-                      ) : (
-                        <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
-                      )}
-                      
-                      {!item.sold && isNewItem(item.created_at) && (
-                        <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#003366', color: 'white', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '10px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</div>
-                      )}
-
-                      {item.sold && (
-                        <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>SOLD</div>
-                      )}
-                    </div>
-                    <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                      <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
-                      <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
-                      
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
-                        <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
-                        
-                        {!item.sold ? (
-                          item.shipping_size === 'pickup' ? (
-                            <div style={{ textAlign: 'right' }}>
-                              <span style={{ fontSize: '0.85em', color: '#003366', fontWeight: 'bold', display: 'block' }}>LOCAL PICKUP ONLY</span>
-                              <span style={{ fontSize: '0.7em', color: '#666', fontStyle: 'italic' }}>Temple, GA</span>
-                            </div>
-                          ) : (
-                            <button 
-                              onClick={() => handleCheckout(item)}
-                              disabled={checkoutLoading === item.id}
-                              style={{
-                                backgroundColor: checkoutLoading === item.id ? '#888' : '#28a745',
-                                color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px',
-                                fontWeight: 'bold', cursor: checkoutLoading === item.id ? 'wait' : 'pointer',
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.2)', transition: 'background-color 0.2s'
-                              }}
-                            >
-                              {checkoutLoading === item.id ? 'Loading...' : 'Buy Now'}
-                            </button>
-                          )
+              <>
+                <div style={gridStyle}>
+                  {visibleInventory.map((item, index) => (
+                    <div key={item.id} style={{ ...cardStyle, opacity: item.sold ? 0.6 : 1 }}>
+                      <div onClick={() => item.photo && setSelectedImage(item.photo)} style={imageContainerStyle}>
+                        {item.photo ? (
+                          <OptimizedImage
+                            src={item.photo}
+                            alt={item.name}
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '4px', position: 'relative', zIndex: 1 }}
+                            onClick={() => item.photo && setSelectedImage(item.photo)}
+                            priority={index < 4}
+                          />
                         ) : (
-                          <span style={{ fontSize: '0.8em', color: '#FF3B30', fontWeight: 'bold' }}>SOLD OUT</span>
+                          <div style={{ color: '#003366', fontWeight: 'bold' }}>No Image</div>
+                        )}
+                        
+                        {!item.sold && isNewItem(item.created_at) && (
+                          <div style={{ position: 'absolute', top: '10px', left: '10px', background: '#003366', color: 'white', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', fontSize: '10px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>NEW</div>
+                        )}
+
+                        {item.sold && (
+                          <div style={{ position: 'absolute', top: '10px', right: '-35px', background: '#FF3B30', color: 'white', padding: '3px 40px', transform: 'rotate(45deg)', fontWeight: 'bold', fontSize: '11px', letterSpacing: '2px', zIndex: 10, boxShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>SOLD</div>
                         )}
                       </div>
+                      <div style={{ padding: '15px', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <h2 style={{ margin: '0 0 8px 0', fontSize: '1.1em', color: '#003366', fontWeight: 'bold' }}>{item.name}</h2>
+                        <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
+                        
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
+                          <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
+                          
+                          {!item.sold ? (
+                            item.shipping_size === 'pickup' ? (
+                              <div style={{ textAlign: 'right' }}>
+                                <span style={{ fontSize: '0.85em', color: '#003366', fontWeight: 'bold', display: 'block' }}>LOCAL PICKUP ONLY</span>
+                                <span style={{ fontSize: '0.7em', color: '#666', fontStyle: 'italic' }}>Temple, GA</span>
+                              </div>
+                            ) : (
+                              <button 
+                                onClick={() => handleCheckout(item)}
+                                disabled={checkoutLoading === item.id}
+                                style={{
+                                  backgroundColor: checkoutLoading === item.id ? '#888' : '#28a745',
+                                  color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px',
+                                  fontWeight: 'bold', cursor: checkoutLoading === item.id ? 'wait' : 'pointer',
+                                  boxShadow: '0 2px 5px rgba(0,0,0,0.2)', transition: 'background-color 0.2s'
+                                }}
+                              >
+                                {checkoutLoading === item.id ? 'Loading...' : 'Buy Now'}
+                              </button>
+                            )
+                          ) : (
+                            <span style={{ fontSize: '0.8em', color: '#FF3B30', fontWeight: 'bold' }}>SOLD OUT</span>
+                          )}
+                        </div>
 
+                      </div>
                     </div>
+                  ))}
+                </div>
+                
+                {visibleCount < displayedInventory.length && (
+                  <div style={{ textAlign: 'center', marginTop: '30px', color: '#003366' }}>
+                    <div style={{
+                      display: 'inline-block',
+                      width: '40px',
+                      height: '40px',
+                      border: '4px solid #e0e0e0',
+                      borderTop: '4px solid #003366',
+                      borderRadius: '50%',
+                      animation: 'spin 1s linear infinite'
+                    }} />
+                    <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
 
             <footer style={counterStyle}>
