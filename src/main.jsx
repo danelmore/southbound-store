@@ -64,11 +64,14 @@ function SouthboundSalvage() {
   const handleCheckout = async (item) => {
     setCheckoutLoading(item.id);
     try {
+      // Logic to ensure the correct string is sent to your Edge Function
+      const shippingSize = item.shipping_size || 'medium';
+
       const { data, error } = await supabase.functions.invoke('checkout', {
         body: {
           item_name: item.name,
           price: item.price,
-          shipping_size: item.shipping_size || 'medium'
+          shipping_size: shippingSize // Will be 'small', 'medium', or 'large'
         }
       });
 
@@ -94,7 +97,7 @@ function SouthboundSalvage() {
     ? inventory.filter(item => isNewItem(item.created_at))
     : inventory;
 
-  // --- Background Styling Updated ---
+  // --- Background Styling ---
   const fixedBackgroundStyle = {
     position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
     backgroundImage: "linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.4)), url('/lauraiscrazy.jpeg')",
