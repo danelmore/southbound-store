@@ -211,6 +211,19 @@ function SouthboundSalvage() {
     fetchPublicInventory();
   }, []);
 
+  // Reset checkout loading state when user returns from Stripe (back button)
+  useEffect(() => {
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        // Page was restored from bfcache (back button navigation)
+        setCheckoutLoading(null);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    return () => window.removeEventListener('pageshow', handlePageShow);
+  }, []);
+
   // Infinite scroll - load more items as user scrolls
   useEffect(() => {
     if (loading) return;
@@ -447,7 +460,10 @@ function SouthboundSalvage() {
                         <div style={{ color: '#444', fontSize: '0.85em', marginBottom: '12px', flexGrow: 1, lineHeight: '1.4' }}>{item.desc}</div>
                         
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(0, 51, 102, 0.1)', paddingTop: '10px' }}>
-                          <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column' }}>
+                            <span style={{ fontSize: '1.3em', fontWeight: 'bold', color: '#003366' }}>${item.price}</span>
+                            <span style={{ fontSize: '0.75em', color: '#666', fontStyle: 'italic' }}>plus shipping</span>
+                          </div>
                           
                           {!item.sold ? (
                             item.shipping_size === 'pickup' ? (
