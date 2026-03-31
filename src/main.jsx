@@ -170,14 +170,74 @@ function SouthboundSalvage() {
   const [filterNew, setFilterNew] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(null);
   const [visibleCount, setVisibleCount] = useState(8);
-
-  useEffect(() => {
-    // Check for Stripe Success
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("success")) {
-      alert("Thank you for your purchase! We've received your order and will be in touch shortly to coordinate shipping or pickup.");
-      window.history.replaceState({}, document.title, window.location.pathname);
+  
+  // CART STATE with localStorage persistence
+  const [cart, setCart] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedCart = localStorage.getItem('southbound_cart');
+      return savedCart ? JSON.parse(savedCart) : [];
     }
+    return [];
+  });
+  const [showCart, setShowCart] = useState(false);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('southbound_cart', JSON.stringify(cart));
+  }, [cart]);
+
+  // FIXED: Handle success with bfcache detection
+  useEffect(() => {
+    let isRestoredFromBFCache = false;
+
+    // Detect if page is restored from bfcache (back button)
+    const handlePageShow = (event) => {
+      if (event.persisted) {
+        console.log("Page restored from bfcache - this is a back/forward navigation");
+        isRestoredFromBFCache = true;
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+
+    // Small delay to let pageshow event fire first
+    const timer = setTimeout(() => {
+      window.removeEventListener('pageshow', handlePageShow);
+
+      const query = new URLSearchParams(window.location.search);
+      const isSuccess = query.get("success") === "true";
+      const sessionId = query.get("session_id");
+
+      if (isSuccess && sessionId) {
+        if (isRestoredFromBFCache) {
+          // User hit back button - don't clear cart, just clean URL
+          console.log("Back button from checkout - keeping cart");
+          window.history.replaceState({}, document.title, window.location.pathname);
+        } else {
+          // Fresh navigation to success page - process payment
+          console.log("Fresh success page load - processing payment");
+
+          // Check if we already processed this session
+          const processedSessions = JSON.parse(localStorage.getItem('processed_sessions') || '[]');
+
+          if (processedSessions.includes(sessionId)) {
+            console.log("Session already processed - keeping cart");
+            window.history.replaceState({}, document.title, window.location.pathname);
+          } else {
+            // New successful payment - clear cart
+            processedSessions.push(sessionId);
+            localStorage.setItem('processed_sessions', JSON.stringify(processedSessions));
+
+            localStorage.removeItem('southbound_cart');
+            setCart([]);
+
+            alert("Thank you for your purchase! We've received your order and will be in touch shortly to coordinate shipping or pickup.");
+
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        }
+      }
+    }, 100); // Small delay to detect bfcache
 
     const fetchPublicInventory = async () => {
       try {
@@ -209,13 +269,17 @@ function SouthboundSalvage() {
       .catch(err => console.error("Counter Error:", err));
 
     fetchPublicInventory();
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('pageshow', handlePageShow);
+    };
   }, []);
 
-  // Reset checkout loading state when user returns from Stripe (back button)
+  // Reset checkout loading state when user returns from Stripe
   useEffect(() => {
     const handlePageShow = (event) => {
       if (event.persisted) {
-        // Page was restored from bfcache (back button navigation)
         setCheckoutLoading(null);
       }
     };
@@ -224,7 +288,7 @@ function SouthboundSalvage() {
     return () => window.removeEventListener('pageshow', handlePageShow);
   }, []);
 
-  // Infinite scroll - load more items as user scrolls
+  // Infinite scroll
   useEffect(() => {
     if (loading) return;
     
@@ -238,16 +302,61 @@ function SouthboundSalvage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [loading, inventory, filterNew]);
 
-  const handleCheckout = async (item) => {
-    setCheckoutLoading(item.id);
-    try {
-      const shippingSize = item.shipping_size || 'medium';
+  // CART FUNCTIONS
+  const addToCart = (item) => {
+    if (item.sold) return;
+    
+    setCart(prevCart => {
+      const existingItem = prevCart.find(cartItem => cartItem.id === item.id);
+      if (existingItem) {
+        return prevCart.map(cartItem => 
+          cartItem.id === item.id 
+            ? { ...cartItem, quantity: cartItem.quantity + 1 }
+            : cartItem
+        );
+      }
+      return [...prevCart, { 
+        id: item.id, 
+        name: item.name, 
+        price: item.price, 
+        quantity: 1,
+        shipping_size: item.shipping_size || 'medium'
+      }];
+    });
+  };
 
+  const removeFromCart = (itemId) => {
+    setCart(prevCart => prevCart.filter(item => item.id !== itemId));
+  };
+
+  const updateQuantity = (itemId, newQuantity) => {
+    if (newQuantity < 1) {
+      removeFromCart(itemId);
+      return;
+    }
+    setCart(prevCart => prevCart.map(item => 
+      item.id === itemId ? { ...item, quantity: newQuantity } : item
+    ));
+  };
+
+  const getCartTotal = () => {
+    return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
+
+  // CHECKOUT
+  const handleCheckout = async () => {
+    if (cart.length === 0) return;
+    
+    setCheckoutLoading('cart');
+    try {
       const { data, error } = await supabase.functions.invoke('checkout', {
         body: {
-          item_name: item.name,
-          price: item.price,
-          shipping_size: shippingSize
+          cart: cart.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            shipping_size: item.shipping_size || 'medium'
+          }))
         }
       });
 
@@ -473,16 +582,15 @@ function SouthboundSalvage() {
                               </div>
                             ) : (
                               <button 
-                                onClick={() => handleCheckout(item)}
-                                disabled={checkoutLoading === item.id}
+                                onClick={() => addToCart(item)}
                                 style={{
-                                  backgroundColor: checkoutLoading === item.id ? '#888' : '#28a745',
+                                  backgroundColor: '#28a745',
                                   color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px',
-                                  fontWeight: 'bold', cursor: checkoutLoading === item.id ? 'wait' : 'pointer',
+                                  fontWeight: 'bold', cursor: 'pointer',
                                   boxShadow: '0 2px 5px rgba(0,0,0,0.2)', transition: 'background-color 0.2s'
                                 }}
                               >
-                                {checkoutLoading === item.id ? 'Loading...' : 'Buy Now'}
+                                Add to Cart
                               </button>
                             )
                           ) : (
@@ -510,6 +618,131 @@ function SouthboundSalvage() {
                   </div>
                 )}
               </>
+            )}
+
+            {/* CART UI */}
+            {cart.length > 0 && (
+              <div style={{
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                background: '#ffffff',
+                border: '2px solid #003366',
+                borderRadius: '12px',
+                padding: '15px',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+                zIndex: 100,
+                minWidth: '250px',
+                maxWidth: '300px'
+              }}>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  borderBottom: '1px solid #003366',
+                  paddingBottom: '10px'
+                }}>
+                  <span style={{ fontWeight: 'bold', color: '#003366' }}>
+                    Cart ({cart.reduce((sum, item) => sum + item.quantity, 0)} items)
+                  </span>
+                  <button 
+                    onClick={() => setShowCart(!showCart)}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: '#003366',
+                      cursor: 'pointer',
+                      fontSize: '1.2em'
+                    }}
+                  >
+                    {showCart ? '▼' : '▲'}
+                  </button>
+                </div>
+                
+                {showCart && (
+                  <div style={{ marginBottom: '10px' }}>
+                    {cart.map(item => (
+                      <div key={item.id} style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '8px',
+                        fontSize: '0.9em'
+                      }}>
+                        <span style={{ flex: 1 }}>{item.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            style={{ 
+                              background: '#003366', 
+                              color: 'white', 
+                              border: 'none', 
+                              borderRadius: '3px',
+                              width: '20px',
+                              height: '20px',
+                              cursor: 'pointer'
+                            }}
+                          >-</button>
+                          <span>{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            style={{ 
+                              background: '#003366', 
+                              color: 'white', 
+                              border: 'none', 
+                              borderRadius: '3px',
+                              width: '20px',
+                              height: '20px',
+                              cursor: 'pointer'
+                            }}
+                          >+</button>
+                          <button 
+                            onClick={() => removeFromCart(item.id)}
+                            style={{ 
+                              background: '#FF3B30', 
+                              color: 'white', 
+                              border: 'none', 
+                              borderRadius: '3px',
+                              width: '20px',
+                              height: '20px',
+                              cursor: 'pointer',
+                              marginLeft: '5px'
+                            }}
+                          >×</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div style={{ 
+                  borderTop: '1px solid #003366', 
+                  paddingTop: '10px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span style={{ fontWeight: 'bold', color: '#003366' }}>
+                    Total: ${getCartTotal().toFixed(2)}
+                  </span>
+                  <button
+                    onClick={handleCheckout}
+                    disabled={checkoutLoading === 'cart'}
+                    style={{
+                      backgroundColor: checkoutLoading === 'cart' ? '#888' : '#003366',
+                      color: 'white',
+                      border: 'none',
+                      padding: '8px 16px',
+                      borderRadius: '6px',
+                      fontWeight: 'bold',
+                      cursor: checkoutLoading === 'cart' ? 'wait' : 'pointer'
+                    }}
+                  >
+                    {checkoutLoading === 'cart' ? 'Loading...' : 'Checkout'}
+                  </button>
+                </div>
+              </div>
             )}
 
             <footer style={counterStyle}>
